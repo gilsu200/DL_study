@@ -1,7 +1,9 @@
 # week1
-## **Repository for ai deeplearnig class**
-Author:[gilsu200]
+## Repository for AI4DL class
 
-Folders
+Author : [kim gil su]
 
-week[1-26]:Excercise notebooks for corresponding weeks
+## Folder
+* Week[1~16] : exercise notebooks
+* Practice : random practice of mine
+* Add something
