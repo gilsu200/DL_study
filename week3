@@ -1,0 +1,2043 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/gilsu200/DL_study/blob/main/week3\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "2dUSft74IuIH"
+      },
+      "source": [
+        "This is a companion notebook for the book [Deep Learning with Python, Second Edition](https://www.manning.com/books/deep-learning-with-python-second-edition?a_aid=keras&a_bid=76564dff). For readability, it only contains runnable code blocks and section titles, and omits everything else in the book: text paragraphs, figures, and pseudocode.\n",
+        "\n",
+        "**If you want to be able to follow what's going on, I recommend reading the notebook side by side with your copy of the book.**\n",
+        "\n",
+        "This notebook was generated for TensorFlow 2.6."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "4wzbmUwkIuIL"
+      },
+      "source": [
+        "# The mathematical building blocks of neural networks"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "qYR1VDNbIuIM"
+      },
+      "source": [
+        "## A first look at a neural network"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "qNgoL-XUIuIM"
+      },
+      "source": [
+        "**Loading the MNIST dataset in Keras**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 16,
+      "metadata": {
+        "id": "R4LkD1L3IuIN",
+        "outputId": "c382aa91-472f-4b26-f0a8-d3044a352b0d",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Downloading data from https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz\n",
+            "11490434/11490434 [==============================] - 0s 0us/step\n"
+          ]
+        }
+      ],
+      "source": [
+        "from tensorflow.keras.datasets import mnist\n",
+        "(train_images, train_labels), (test_images, test_labels) = mnist.load_data()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 17,
+      "metadata": {
+        "id": "GYg3EH_HIuIP",
+        "outputId": "b5622501-9321-4350-c490-8431207750be",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(60000, 28, 28)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 17
+        }
+      ],
+      "source": [
+        "train_images.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "6hZk68kFIuIP"
+      },
+      "outputs": [],
+      "source": [
+        "len(train_labels)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "HNt55M0mIuIP"
+      },
+      "outputs": [],
+      "source": [
+        "train_labels"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "PoENbzzcIuIQ"
+      },
+      "outputs": [],
+      "source": [
+        "test_images.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "ZdHcUq0xIuIQ"
+      },
+      "outputs": [],
+      "source": [
+        "len(test_labels)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "A9QxA6xZIuIQ"
+      },
+      "outputs": [],
+      "source": [
+        "test_labels"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Z6SsRpttIuIR"
+      },
+      "source": [
+        "**The network architecture**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 51,
+      "metadata": {
+        "id": "usgXIrPYIuIR"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow import keras\n",
+        "from tensorflow.keras import layers\n",
+        "model = keras.Sequential([\n",
+        "    layers.Dense(512, activation=\"relu\"),\n",
+        "    layers.Dense(10, activation=\"softmax\")\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "JZTh5TOaIuIR"
+      },
+      "source": [
+        "**The compilation step**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 52,
+      "metadata": {
+        "id": "r0NPRBpXIuIR"
+      },
+      "outputs": [],
+      "source": [
+        "model.compile(optimizer=\"rmsprop\",\n",
+        "              loss=\"sparse_categorical_crossentropy\",\n",
+        "              metrics=[\"accuracy\"])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: explain this code\n",
+        "# model.compile(optimizer=\"rmsprop\",\n",
+        "#               loss=\"sparse_categorical_crossentropy\",\n",
+        "#               metrics=[\"accuracy\"])\n",
+        "\n",
+        "The `model.compile()` method in Keras is used to configure the model for training. It takes three main arguments:\n",
+        "\n",
+        "- `optimizer`: This specifies the optimization algorithm to be used for training the model. In this case, the \"rmsprop\" optimizer is used.\n",
+        "- `loss`: This specifies the loss function to be used for evaluating the model's performance during training and testing. Here, the \"sparse_categorical_crossentropy\" loss function is used, which is suitable for multi-class classification problems.\n",
+        "- `metrics`: This is a list of metrics to be evaluated during training and testing. In this case, the \"accuracy\" metric is used, which measures the model's prediction accuracy.\n",
+        "\n",
+        "By calling `model.compile()`, the model is configured and prepared for training. The chosen optimizer, loss function, and metrics will be used during the training process to update the model's weights and evaluate its performance."
+      ],
+      "metadata": {
+        "id": "ORyxp9fZWSBD"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "-jO9EdKVIuIR"
+      },
+      "source": [
+        "**Preparing the image data**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 53,
+      "metadata": {
+        "id": "XSf8mZAaIuIS"
+      },
+      "outputs": [],
+      "source": [
+        "train_images = train_images.reshape((60000, 28 * 28))\n",
+        "train_images = train_images.astype(\"float32\") / 255\n",
+        "test_images = test_images.reshape((10000, 28 * 28))\n",
+        "test_images = test_images.astype(\"float32\") / 255"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "hydmSnPEIuIS"
+      },
+      "source": [
+        "**\"Fitting\" the model**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 54,
+      "metadata": {
+        "id": "3f4n4SpvIuIS",
+        "outputId": "f6dff0f0-7ff8-414d-9357-01073227bd33",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/5\n",
+            "469/469 [==============================] - 3s 3ms/step - loss: 2.2327 - accuracy: 0.2590\n",
+            "Epoch 2/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 1.6529 - accuracy: 0.5935\n",
+            "Epoch 3/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 1.0333 - accuracy: 0.7510\n",
+            "Epoch 4/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.7445 - accuracy: 0.8133\n",
+            "Epoch 5/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.6014 - accuracy: 0.8418\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.src.callbacks.History at 0x7bff154315a0>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 54
+        }
+      ],
+      "source": [
+        "model.fit(train_images, train_labels, epochs=5, batch_size=128)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "SZTVb3IbIuIS"
+      },
+      "source": [
+        "**Using the model to make predictions**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 55,
+      "metadata": {
+        "id": "vAMdMN1QIuIS",
+        "outputId": "29e0c4b8-5343-4316-f4aa-d0589828a64d",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "1/1 [==============================] - 0s 102ms/step\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([4.2605118e-04, 6.3505686e-05, 1.3837541e-04, 1.4131479e-03,\n",
+              "       1.0759401e-03, 1.7452168e-03, 7.6502201e-06, 9.6886718e-01,\n",
+              "       3.8232413e-04, 2.5880655e-02], dtype=float32)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 55
+        }
+      ],
+      "source": [
+        "test_digits = test_images[0:10]\n",
+        "predictions = model.predict(test_digits)\n",
+        "predictions[0]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 56,
+      "metadata": {
+        "id": "pC9d4UnSIuIT",
+        "outputId": "799c37f5-5292-44a4-dcdc-5309d6f539ae",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "7"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 56
+        }
+      ],
+      "source": [
+        "predictions[0].argmax()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 57,
+      "metadata": {
+        "id": "fgRxlGV3IuIT",
+        "outputId": "e9cd670c-192b-49e7-a9b3-7a6dd38b7ec1",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0.9688672"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 57
+        }
+      ],
+      "source": [
+        "predictions[0][7]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 58,
+      "metadata": {
+        "id": "P-Bbup1OIuIT",
+        "outputId": "d6defd93-0266-464d-f3e5-d1fcc132a07a",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "7"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 58
+        }
+      ],
+      "source": [
+        "test_labels[0]"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "fw5ugvOqIuIT"
+      },
+      "source": [
+        "**Evaluating the model on new data**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 59,
+      "metadata": {
+        "id": "C11cDlc0IuIT",
+        "outputId": "e41dbb74-3af6-4186-b27e-fd7800b851aa",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "313/313 [==============================] - 1s 2ms/step - loss: 0.5366 - accuracy: 0.8563\n",
+            "test_acc: 0.8562999963760376\n"
+          ]
+        }
+      ],
+      "source": [
+        "test_loss, test_acc = model.evaluate(test_images, test_labels)\n",
+        "print(f\"test_acc: {test_acc}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "9rmpPIxwIuIT"
+      },
+      "source": [
+        "## Data representations for neural networks"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "fYZHIjhiIuIT"
+      },
+      "source": [
+        "### Scalars (rank-0 tensors)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 60,
+      "metadata": {
+        "id": "8nwOQQk0IuIU",
+        "outputId": "3c937077-5c51-49ca-8ae5-7f58fba3964d",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array(12)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 60
+        }
+      ],
+      "source": [
+        "import numpy as np\n",
+        "x = np.array(12)\n",
+        "x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 61,
+      "metadata": {
+        "id": "_aNInQb7IuIU",
+        "outputId": "7753e813-05a3-4455-9fbe-8f6352803d0b",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "0"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 61
+        }
+      ],
+      "source": [
+        "x.ndim"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "TefSB66_IuIU"
+      },
+      "source": [
+        "### Vectors (rank-1 tensors)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 62,
+      "metadata": {
+        "id": "IZzmiKyVIuIU",
+        "outputId": "52a1a3e1-a394-4f6a-a23f-9f73875fc943",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([12,  3,  6, 14,  7])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 62
+        }
+      ],
+      "source": [
+        "x = np.array([12, 3, 6, 14, 7])\n",
+        "x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 63,
+      "metadata": {
+        "id": "lOvXMPEgIuIV",
+        "outputId": "830c7ebc-3d81-4728-cc49-524b95399982",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "1"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 63
+        }
+      ],
+      "source": [
+        "x.ndim"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "WOw95uaVIuIV"
+      },
+      "source": [
+        "### Matrices (rank-2 tensors)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "o6y4b-fSIuIV"
+      },
+      "outputs": [],
+      "source": [
+        "x = np.array([[5, 78, 2, 34, 0],\n",
+        "              [6, 79, 3, 35, 1],\n",
+        "              [7, 80, 4, 36, 2]])\n",
+        "x.ndim"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "aZOtznOuIuIV"
+      },
+      "source": [
+        "### Rank-3 and higher-rank tensors"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "9aAGGVC5IuIV"
+      },
+      "outputs": [],
+      "source": [
+        "x = np.array([[[5, 78, 2, 34, 0],\n",
+        "               [6, 79, 3, 35, 1],\n",
+        "               [7, 80, 4, 36, 2]],\n",
+        "              [[5, 78, 2, 34, 0],\n",
+        "               [6, 79, 3, 35, 1],\n",
+        "               [7, 80, 4, 36, 2]],\n",
+        "              [[5, 78, 2, 34, 0],\n",
+        "               [6, 79, 3, 35, 1],\n",
+        "               [7, 80, 4, 36, 2]]])\n",
+        "x.ndim"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Vvfjct5zIuIV"
+      },
+      "source": [
+        "### Key attributes"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "8wBK_A89IuIW"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.datasets import mnist\n",
+        "(train_images, train_labels), (test_images, test_labels) = mnist.load_data()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "F16xPkjMIuIb"
+      },
+      "outputs": [],
+      "source": [
+        "train_images.ndim"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "06Z62JWhIuIc"
+      },
+      "outputs": [],
+      "source": [
+        "train_images.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "6J6jtt_NIuIc"
+      },
+      "outputs": [],
+      "source": [
+        "train_images.dtype"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "J1I6l6tzIuIc"
+      },
+      "source": [
+        "**Displaying the fourth digit**"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "iq9aysuuIuIc"
+      },
+      "outputs": [],
+      "source": [
+        "import matplotlib.pyplot as plt\n",
+        "digit = train_images[4]\n",
+        "plt.imshow(digit, cmap=plt.cm.binary)\n",
+        "plt.show()"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "SXftZXLdIuIc"
+      },
+      "outputs": [],
+      "source": [
+        "train_labels[4]"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "kdtAZNJDIuIc"
+      },
+      "source": [
+        "### Manipulating tensors in NumPy"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "-j87PSZkIuId"
+      },
+      "outputs": [],
+      "source": [
+        "my_slice = train_images[10:100]\n",
+        "my_slice.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "vCXWl_OGIuId"
+      },
+      "outputs": [],
+      "source": [
+        "my_slice = train_images[10:100, :, :]\n",
+        "my_slice.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "4uFoVCHzIuId"
+      },
+      "outputs": [],
+      "source": [
+        "my_slice = train_images[10:100, 0:28, 0:28]\n",
+        "my_slice.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "EC6CQ-STIuId"
+      },
+      "outputs": [],
+      "source": [
+        "my_slice = train_images[:, 14:, 14:]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "7iqb0oNCIuId"
+      },
+      "outputs": [],
+      "source": [
+        "my_slice = train_images[:, 7:-7, 7:-7]"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dWNeTsFWIuId"
+      },
+      "source": [
+        "### The notion of data batches"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "GVS0QMYpIuIe"
+      },
+      "outputs": [],
+      "source": [
+        "batch = train_images[:128]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "-MDXIIo-IuIe"
+      },
+      "outputs": [],
+      "source": [
+        "batch = train_images[128:256]"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "Ko2E83JFIuIe"
+      },
+      "outputs": [],
+      "source": [
+        "n = 3\n",
+        "batch = train_images[128 * n:128 * (n + 1)]"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "lFgHbXRxIuIe"
+      },
+      "source": [
+        "### Real-world examples of data tensors"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "f8_dkC8AIuIe"
+      },
+      "source": [
+        "### Vector data"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "Bw99xsNSIuIe"
+      },
+      "source": [
+        "### Timeseries data or sequence data"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "k8zFFe4QIuIf"
+      },
+      "source": [
+        "### Image data"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "WFT8otI9JJ_N"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "n9eGm13jIuIf"
+      },
+      "source": [
+        "### Video data"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "GaX4IPlBIuIf"
+      },
+      "source": [
+        "## The gears of neural networks: tensor operations"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ZHMZ9-pxIuIf"
+      },
+      "source": [
+        "### Element-wise operations"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "RUX0pINRJMB-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "id": "d8nuUZzwIuIf"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_relu(x):\n",
+        "    assert len(x.shape) == 2\n",
+        "    x = x.copy() #데이터 안덮어쓰여지게\n",
+        "    for i in range(x.shape[0]):\n",
+        "        for j in range(x.shape[1]):\n",
+        "            x[i, j] = max(x[i, j], 0)\n",
+        "    return x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "id": "4O70qzv7IuIf"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_add(x, y):\n",
+        "    assert len(x.shape) == 2\n",
+        "    assert x.shape == y.shape\n",
+        "    x = x.copy()\n",
+        "    for i in range(x.shape[0]):\n",
+        "        for j in range(x.shape[1]):\n",
+        "            x[i, j] += y[i, j]\n",
+        "    return x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Why we use x.copy() ?\n",
+        "\n",
+        "If we don't use `x.copy()`, the original `x` will be modified when we modify the `x` inside the function. This is because the function modifies the original array, not a copy of it.\n",
+        "\n",
+        "For example, consider the following code:\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "KkkGr-eXLdgT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "id": "8g-kGr2bIuIf",
+        "outputId": "a646683e-823c-4106-d4c3-05276ee160f1",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Took: 0.01 s\n"
+          ]
+        }
+      ],
+      "source": [
+        "import time\n",
+        "\n",
+        "x = np.random.random((20, 100))\n",
+        "y = np.random.random((20, 100))\n",
+        "\n",
+        "t0 = time.time()\n",
+        "for _ in range(1000):\n",
+        "    z = x + y\n",
+        "    z = np.maximum(z, 0.)\n",
+        "print(\"Took: {0:.2f} s\".format(time.time() - t0))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 5,
+      "metadata": {
+        "id": "Ma-048qFIuIg",
+        "outputId": "89f40a16-968f-428c-c5ab-1e1f16112f71",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Took: 1.84 s\n"
+          ]
+        }
+      ],
+      "source": [
+        "t0 = time.time()\n",
+        "for _ in range(1000):\n",
+        "    z = naive_add(x, y)\n",
+        "    z = naive_relu(z)\n",
+        "print(\"Took: {0:.2f} s\".format(time.time() - t0))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Why the naïve version of the code slower?\n",
+        "\n",
+        "The naïve version of the code is slower because it uses a nested loop to iterate over each element of the tensors `x` and `y`, while the optimized version uses vectorized operations that are implemented in C and are much faster.\n",
+        "\n",
+        "The optimized version uses the `np.maximum` function, which takes two arrays as input and returns an array containing the element-wise maximum of the two arrays. This function is implemented in C and is much faster than the equivalent Python code that uses a nested loop.\n",
+        "\n",
+        "Similarly, the `np.add` function is also implemented in C and is much faster than the equivalent Python code that uses a nested loop.\n",
+        "\n",
+        "Therefore, the optimized version of the code is much faster than the naïve version because it uses vectorized operations that are implemented in C."
+      ],
+      "metadata": {
+        "id": "RXoDT7DlLSTW"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "UBUdbDljIuIg"
+      },
+      "source": [
+        "### Broadcasting"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 36,
+      "metadata": {
+        "id": "7hAGWB3JIuIg",
+        "outputId": "72d440f5-8bd2-4cdc-8fe7-ac8d9c7d76eb",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0.27397031, 0.37173249, 0.08886015, 0.69038272, 0.08704089],\n",
+              "       [0.07111362, 0.24771535, 0.24065323, 0.97027078, 0.75454499],\n",
+              "       [0.84331902, 0.81176319, 0.54067026, 0.83290647, 0.96421233],\n",
+              "       [0.22993403, 0.2530435 , 0.52395043, 0.48977118, 0.38875116],\n",
+              "       [0.50655483, 0.03906108, 0.98686727, 0.96202624, 0.58294595],\n",
+              "       [0.23676502, 0.52066547, 0.52113263, 0.34040878, 0.64822187],\n",
+              "       [0.17240446, 0.29212976, 0.05331979, 0.70424723, 0.27610355],\n",
+              "       [0.0719478 , 0.66314758, 0.60136486, 0.80568519, 0.70298627],\n",
+              "       [0.14044452, 0.49915439, 0.44644208, 0.22825313, 0.48555085],\n",
+              "       [0.07131506, 0.16284596, 0.64498943, 0.71597097, 0.94713479]])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 36
+        }
+      ],
+      "source": [
+        "import numpy as np\n",
+        "X = np.random.random((32, 10))\n",
+        "y = np.random.random((10,))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 7,
+      "metadata": {
+        "id": "WbS0I8S3IuIg"
+      },
+      "outputs": [],
+      "source": [
+        "y = np.expand_dims(y, axis=0)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 8,
+      "metadata": {
+        "id": "jWeCLsC1IuIg"
+      },
+      "outputs": [],
+      "source": [
+        "Y = np.concatenate([y] * 32, axis=0)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 9,
+      "metadata": {
+        "id": "uenHIuEeIuIg"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_add_matrix_and_vector(x, y):\n",
+        "    assert len(x.shape) == 2\n",
+        "    assert len(y.shape) == 1\n",
+        "    assert x.shape[1] == y.shape[0]\n",
+        "    x = x.copy()\n",
+        "    for i in range(x.shape[0]):\n",
+        "        for j in range(x.shape[1]):\n",
+        "            x[i, j] += y[j]\n",
+        "    return x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 14,
+      "metadata": {
+        "id": "m0unXSs4IuIh"
+      },
+      "outputs": [],
+      "source": [
+        "import numpy as np\n",
+        "x = np.random.random((64, 3, 32, 10))\n",
+        "y = np.random.random((32, 10))\n",
+        "z = np.maximum(x, y)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Try to use broadcasting with your own example\n",
+        "\n",
+        "# Create a 3D array of shape (2, 3, 4)\n",
+        "x = np.array([[[1, 2, 3, 4],\n",
+        "               [5, 6, 7, 8],\n",
+        "               [9, 10, 11, 12]],\n",
+        "              [[13, 14, 15, 16],\n",
+        "               [17, 18, 19, 20],\n",
+        "               [21, 22, 23, 24]]])\n",
+        "\n",
+        "# Create a 2D array of shape (3, 4)\n",
+        "y = np.array([[25, 26, 27, 28],\n",
+        "               [29, 30, 31, 32],\n",
+        "               [33, 34, 35, 36]])\n",
+        "\n",
+        "# Add x and y using broadcasting\n",
+        "z = x + y\n",
+        "\n",
+        "# Print the resulting array\n",
+        "print(z)\n"
+      ],
+      "metadata": {
+        "id": "inDdgvE6MAgp",
+        "outputId": "404644e0-176a-4baa-a429-d78fd2e27ed0",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "[[[26 28 30 32]\n",
+            "  [34 36 38 40]\n",
+            "  [42 44 46 48]]\n",
+            "\n",
+            " [[38 40 42 44]\n",
+            "  [46 48 50 52]\n",
+            "  [54 56 58 60]]]\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "kKcKqtH9IuIh"
+      },
+      "source": [
+        "### Tensor product"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "5hxv930XIuIh"
+      },
+      "outputs": [],
+      "source": [
+        "x = np.random.random((32,))\n",
+        "y = np.random.random((32,))\n",
+        "z = np.dot(x, y)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "npr7VvOOIuIh"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_vector_dot(x, y):\n",
+        "    assert len(x.shape) == 1\n",
+        "    assert len(y.shape) == 1\n",
+        "    assert x.shape[0] == y.shape[0]\n",
+        "    z = 0.\n",
+        "    for i in range(x.shape[0]):\n",
+        "        z += x[i] * y[i]\n",
+        "    return z"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "R-aH4PN2IuIh"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_matrix_vector_dot(x, y):\n",
+        "    assert len(x.shape) == 2\n",
+        "    assert len(y.shape) == 1\n",
+        "    assert x.shape[1] == y.shape[0]\n",
+        "    z = np.zeros(x.shape[0])\n",
+        "    for i in range(x.shape[0]):\n",
+        "        for j in range(x.shape[1]):\n",
+        "            z[i] += x[i, j] * y[j]\n",
+        "    return z"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "t6jkfX_4IuIh"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_matrix_vector_dot(x, y):\n",
+        "    z = np.zeros(x.shape[0])\n",
+        "    for i in range(x.shape[0]):\n",
+        "        z[i] = naive_vector_dot(x[i, :], y)\n",
+        "    return z"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "yRN9PEHfIuIi"
+      },
+      "outputs": [],
+      "source": [
+        "def naive_matrix_dot(x, y):\n",
+        "    assert len(x.shape) == 2\n",
+        "    assert len(y.shape) == 2\n",
+        "    assert x.shape[1] == y.shape[0]\n",
+        "    z = np.zeros((x.shape[0], y.shape[1]))\n",
+        "    for i in range(x.shape[0]):\n",
+        "        for j in range(y.shape[1]):\n",
+        "            row_x = x[i, :]\n",
+        "            column_y = y[:, j]\n",
+        "            z[i, j] = naive_vector_dot(row_x, column_y)\n",
+        "    return z"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "v2k4zLk1IuIi"
+      },
+      "source": [
+        "### Tensor reshaping"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 18,
+      "metadata": {
+        "id": "l_LvKu1lIuIi"
+      },
+      "outputs": [],
+      "source": [
+        "train_images = train_images.reshape((60000, 28 * 28))"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 19,
+      "metadata": {
+        "id": "Wbl9ak0XIuIi",
+        "outputId": "0d3d88c6-7b8b-4ce6-af06-c60a06c97380",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "(3, 2)"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 19
+        }
+      ],
+      "source": [
+        "x = np.array([[0., 1.],\n",
+        "             [2., 3.],\n",
+        "             [4., 5.]])\n",
+        "x.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 22,
+      "metadata": {
+        "id": "JU0OrI5BIuIi",
+        "outputId": "f7eab9e3-cae8-4b5b-8835-e37cb0e12768",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([0., 1., 2., 3., 4., 5.])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 22
+        }
+      ],
+      "source": [
+        "x = x.reshape((6,))\n",
+        "x"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "x = x.reshape((6,1))\n",
+        "x"
+      ],
+      "metadata": {
+        "id": "gPahbV3dNhtn",
+        "outputId": "a7eac303-4689-4b16-fe43-e63c9cce96b7",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 23,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0.],\n",
+              "       [1.],\n",
+              "       [2.],\n",
+              "       [3.],\n",
+              "       [4.],\n",
+              "       [5.]])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 23
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "2pPBy5WaIuIj"
+      },
+      "outputs": [],
+      "source": [
+        "x = np.zeros((300, 20))\n",
+        "x = np.transpose(x)\n",
+        "x.shape"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Try reshaping code\n",
+        "\n",
+        "x = np.zeros((300, 20))\n",
+        "x = np.transpose(x)\n",
+        "print(x.shape)\n"
+      ],
+      "metadata": {
+        "id": "TQnjZXH_NnYa",
+        "outputId": "282632a2-45af-425c-82df-d3720d8c31d9",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 32,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "(20, 300)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "x = np.zeros((5,2)) # 0으로된 5행2열\n",
+        "x = np.transpose(x) # transpose\n",
+        "x"
+      ],
+      "metadata": {
+        "id": "tSLMBO1nPKsi",
+        "outputId": "6cc0fba6-8c05-4b23-9662-e964514f1631",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 34,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "array([[0., 0., 0., 0., 0.],\n",
+              "       [0., 0., 0., 0., 0.]])"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 34
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "64c44eUDIuIj"
+      },
+      "source": [
+        "### Geometric interpretation of tensor operations"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "mbK0YwYSIuIj"
+      },
+      "source": [
+        "### A geometric interpretation of deep learning"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "8OBI0ghFIuIj"
+      },
+      "source": [
+        "## The engine of neural networks: gradient-based optimization"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "s2z9HJpuIuIj"
+      },
+      "source": [
+        "### What's a derivative?"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "V2ym6G5dIuIk"
+      },
+      "source": [
+        "### Derivative of a tensor operation: the gradient"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "zRSR-n-dIuIk"
+      },
+      "source": [
+        "### Stochastic gradient descent"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "wFtN-UjKIuIk"
+      },
+      "source": [
+        "### Chaining derivatives: The Backpropagation algorithm"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "SWO42mZsIuIk"
+      },
+      "source": [
+        "#### The chain rule"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "TqclcQUQIuIk"
+      },
+      "source": [
+        "#### Automatic differentiation with computation graphs"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "7aDgC2a0IuIk"
+      },
+      "source": [
+        "#### The gradient tape in TensorFlow"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 37,
+      "metadata": {
+        "id": "2bXw5x-oIuIl"
+      },
+      "outputs": [],
+      "source": [
+        "import tensorflow as tf\n",
+        "x = tf.Variable(0.)\n",
+        "with tf.GradientTape() as tape:\n",
+        "    y = 2 * x + 3\n",
+        "grad_of_y_wrt_x = tape.gradient(y, x)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# prompt: Say x, y are scalar, find derivatives of with respect to x and y. f(x,y)=x^2*y+x*y+3y\n",
+        "# (Set x = 2, y = 1 for the calculation)\n",
+        "\n",
+        "x = tf.Variable(2.)\n",
+        "y = tf.Variable(1.)\n",
+        "with tf.GradientTape() as tape:\n",
+        "  z = x**2 * y + x * y + 3 * y\n",
+        "grad_of_z_wrt_xy=tape.gradient(z,[x,y])\n",
+        "grad_of_z_wrt_xy\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "v2-gj4y6Q_YM",
+        "outputId": "1f20ceb4-638f-4f31-a577-a236df86486a",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 45,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "[<tf.Tensor: shape=(), dtype=float32, numpy=5.0>,\n",
+              " <tf.Tensor: shape=(), dtype=float32, numpy=9.0>]"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 45
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "x = tf.constant(np.array([1.,4.,3.]).reshape(1,3), dtype=tf.float32)\n",
+        "W = tf.Variable(tf.random.uniform((3, 2)), dtype=tf.float32)\n",
+        "b = tf.Variable(tf.zeros((2,)), dtype=tf.float32\n",
+        "\n",
+        " with tf.GradientTape() as tape:\n",
+        "  z = x**2 * y + x * y + 3 * y\n",
+        "  dz_dx = tape.gradient(z, x)"
+      ],
+      "metadata": {
+        "id": "kV4Y2SzfSr5D"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "x6KMj4vnIuIl"
+      },
+      "outputs": [],
+      "source": [
+        "W = tf.Variable(tf.random.uniform((2, 2)))\n",
+        "b = tf.Variable(tf.zeros((2,)))\n",
+        "x = tf.random.uniform((2, 2))\n",
+        "with tf.GradientTape() as tape:\n",
+        "    y = tf.matmul(x, W) + b\n",
+        "grad_of_y_wrt_W_and_b = tape.gradient(y, [W, b])"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "dc-pqLEwIuIl"
+      },
+      "source": [
+        "## Looking back at our first example"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 64,
+      "metadata": {
+        "id": "_L72T5LFIuIl"
+      },
+      "outputs": [],
+      "source": [
+        "(train_images, train_labels), (test_images, test_labels) = mnist.load_data()\n",
+        "train_images = train_images.reshape((60000, 28 * 28))\n",
+        "train_images = train_images.astype(\"float32\") / 255\n",
+        "test_images = test_images.reshape((10000, 28 * 28))\n",
+        "test_images = test_images.astype(\"float32\") / 255"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 65,
+      "metadata": {
+        "id": "RzkZcTm0IuIl"
+      },
+      "outputs": [],
+      "source": [
+        "model = keras.Sequential([\n",
+        "    layers.Dense(512, activation=\"relu\"),\n",
+        "    layers.Dense(10, activation=\"softmax\")\n",
+        "])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 66,
+      "metadata": {
+        "id": "LnrGqiapIuIl"
+      },
+      "outputs": [],
+      "source": [
+        "model.compile(optimizer=\"rmsprop\",\n",
+        "              loss=\"sparse_categorical_crossentropy\",\n",
+        "              metrics=[\"accuracy\"])"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 67,
+      "metadata": {
+        "id": "ZBuoCo3UIuIm",
+        "outputId": "b7e1c4ca-48e6-4a2e-c70b-6bcc2b3544cd",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Epoch 1/5\n",
+            "469/469 [==============================] - 2s 3ms/step - loss: 0.2639 - accuracy: 0.9229\n",
+            "Epoch 2/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.1063 - accuracy: 0.9677\n",
+            "Epoch 3/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.0705 - accuracy: 0.9788\n",
+            "Epoch 4/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.0512 - accuracy: 0.9846\n",
+            "Epoch 5/5\n",
+            "469/469 [==============================] - 1s 3ms/step - loss: 0.0389 - accuracy: 0.9885\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "<keras.src.callbacks.History at 0x7bff15aff820>"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 67
+        }
+      ],
+      "source": [
+        "model.fit(train_images, train_labels, epochs=5, batch_size=128)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "x5PTAM_WIuIm"
+      },
+      "source": [
+        "### Reimplementing our first example from scratch in TensorFlow"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "kg1W8ZQsIuIm"
+      },
+      "source": [
+        "#### A simple Dense class"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 68,
+      "metadata": {
+        "id": "Qnnn6wA3IuIm"
+      },
+      "outputs": [],
+      "source": [
+        "import tensorflow as tf\n",
+        "\n",
+        "class NaiveDense:\n",
+        "    def __init__(self, input_size, output_size, activation):\n",
+        "        self.activation = activation\n",
+        "\n",
+        "        w_shape = (input_size, output_size)\n",
+        "        w_initial_value = tf.random.uniform(w_shape, minval=0, maxval=1e-1)\n",
+        "        self.W = tf.Variable(w_initial_value)\n",
+        "\n",
+        "        b_shape = (output_size,)\n",
+        "        b_initial_value = tf.zeros(b_shape)\n",
+        "        self.b = tf.Variable(b_initial_value)\n",
+        "\n",
+        "    def __call__(self, inputs):\n",
+        "        return self.activation(tf.matmul(inputs, self.W) + self.b)\n",
+        "\n",
+        "    @property\n",
+        "    def weights(self):\n",
+        "        return [self.W, self.b]"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "2o9kQoLLIuIm"
+      },
+      "source": [
+        "#### A simple Sequential class"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 69,
+      "metadata": {
+        "id": "HjPOqN81IuIm"
+      },
+      "outputs": [],
+      "source": [
+        "class NaiveSequential:\n",
+        "    def __init__(self, layers):\n",
+        "        self.layers = layers\n",
+        "\n",
+        "    def __call__(self, inputs):\n",
+        "        x = inputs\n",
+        "        for layer in self.layers:\n",
+        "           x = layer(x)\n",
+        "        return x\n",
+        "\n",
+        "    @property\n",
+        "    def weights(self):\n",
+        "       weights = []\n",
+        "       for layer in self.layers:\n",
+        "           weights += layer.weights\n",
+        "       return weights"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 70,
+      "metadata": {
+        "id": "JR0f6MRwIuIn"
+      },
+      "outputs": [],
+      "source": [
+        "model = NaiveSequential([\n",
+        "    NaiveDense(input_size=28 * 28, output_size=512, activation=tf.nn.relu),\n",
+        "    NaiveDense(input_size=512, output_size=10, activation=tf.nn.softmax)\n",
+        "])\n",
+        "assert len(model.weights) == 4"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "rXn1SaM8IuIn"
+      },
+      "source": [
+        "#### A batch generator"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 71,
+      "metadata": {
+        "id": "dwzfHokhIuIn"
+      },
+      "outputs": [],
+      "source": [
+        "import math\n",
+        "\n",
+        "class BatchGenerator:\n",
+        "    def __init__(self, images, labels, batch_size=128):\n",
+        "        assert len(images) == len(labels)\n",
+        "        self.index = 0\n",
+        "        self.images = images\n",
+        "        self.labels = labels\n",
+        "        self.batch_size = batch_size\n",
+        "        self.num_batches = math.ceil(len(images) / batch_size)\n",
+        "\n",
+        "    def next(self):\n",
+        "        images = self.images[self.index : self.index + self.batch_size]\n",
+        "        labels = self.labels[self.index : self.index + self.batch_size]\n",
+        "        self.index += self.batch_size\n",
+        "        return images, labels"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "GXLqNeL2IuIn"
+      },
+      "source": [
+        "### Running one training step"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "DgQcq8LlIuIn"
+      },
+      "outputs": [],
+      "source": [
+        "def one_training_step(model, images_batch, labels_batch):\n",
+        "    with tf.GradientTape() as tape:\n",
+        "        predictions = model(images_batch)\n",
+        "        per_sample_losses = tf.keras.losses.sparse_categorical_crossentropy(\n",
+        "            labels_batch, predictions)\n",
+        "        average_loss = tf.reduce_mean(per_sample_losses)\n",
+        "    gradients = tape.gradient(average_loss, model.weights)\n",
+        "    update_weights(gradients, model.weights)\n",
+        "    return average_loss"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "eVA2ca8rIuIo"
+      },
+      "outputs": [],
+      "source": [
+        "learning_rate = 1e-3\n",
+        "\n",
+        "def update_weights(gradients, weights):\n",
+        "    for g, w in zip(gradients, weights):\n",
+        "        w.assign_sub(g * learning_rate)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "tBrxJ_spIuIo"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras import optimizers\n",
+        "\n",
+        "optimizer = optimizers.SGD(learning_rate=1e-3)\n",
+        "\n",
+        "def update_weights(gradients, weights):\n",
+        "    optimizer.apply_gradients(zip(gradients, weights))"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ZB9nEhr1IuIo"
+      },
+      "source": [
+        "### The full training loop"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "DXnU9sNuIuIo"
+      },
+      "outputs": [],
+      "source": [
+        "def fit(model, images, labels, epochs, batch_size=128):\n",
+        "    for epoch_counter in range(epochs):\n",
+        "        print(f\"Epoch {epoch_counter}\")\n",
+        "        batch_generator = BatchGenerator(images, labels)\n",
+        "        for batch_counter in range(batch_generator.num_batches):\n",
+        "            images_batch, labels_batch = batch_generator.next()\n",
+        "            loss = one_training_step(model, images_batch, labels_batch)\n",
+        "            if batch_counter % 100 == 0:\n",
+        "                print(f\"loss at batch {batch_counter}: {loss:.2f}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "wH2OCE7SIuIo"
+      },
+      "outputs": [],
+      "source": [
+        "from tensorflow.keras.datasets import mnist\n",
+        "(train_images, train_labels), (test_images, test_labels) = mnist.load_data()\n",
+        "\n",
+        "train_images = train_images.reshape((60000, 28 * 28))\n",
+        "train_images = train_images.astype(\"float32\") / 255\n",
+        "test_images = test_images.reshape((10000, 28 * 28))\n",
+        "test_images = test_images.astype(\"float32\") / 255\n",
+        "\n",
+        "fit(model, train_images, train_labels, epochs=10, batch_size=128)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "ihVxYsTMIuIo"
+      },
+      "source": [
+        "### Evaluating the model"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "nE-Th3jOIuIo"
+      },
+      "outputs": [],
+      "source": [
+        "predictions = model(test_images)\n",
+        "predictions = predictions.numpy()\n",
+        "predicted_labels = np.argmax(predictions, axis=1)\n",
+        "matches = predicted_labels == test_labels\n",
+        "print(f\"accuracy: {matches.mean():.2f}\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "lf-rCamOIuIp"
+      },
+      "source": [
+        "## Summary"
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "name": "chapter02_mathematical-building-blocks.i",
+      "provenance": [],
+      "toc_visible": true,
+      "gpuType": "T4",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 3
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython3",
+      "version": "3.7.0"
+    },
+    "accelerator": "GPU"
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
